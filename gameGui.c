@@ -13,6 +13,14 @@
 #include <memory.h>
 #endif
 
+#ifdef _WIN32
+#include <conio.h>
+#else
+#include <stdio.h>
+#define clrscr() printf("\e[1;1H\e[2J")
+#endif
+
+
 //stałe dotyczące rozmiarów różnych buforów tekstu
 #define USER_TEXT_INPUT_SIZE 256
 #define MAX_MSG_LENGTH 256
@@ -30,7 +38,8 @@ void runGame(enum solvingAlgorithm alg, bool uniqueSolution) {
     char resultsFromLastCallString[MAX_MSG_LENGTH]; //zawartość informacji
     char userInput[USER_TEXT_INPUT_SIZE];
 
-    while (true) {
+    while (true) { 
+        clrscr();
         render(&sboard, yCursor, xCursor); //wypisywanie interfejsu
 
         if (resultsFromLastCall) printf("%s \n", resultsFromLastCallString); //drukowanie wiadomości z poprzedniego przebiegu pętli
@@ -66,10 +75,10 @@ void runGame(enum solvingAlgorithm alg, bool uniqueSolution) {
         }
         if (isEqual(userInput, "c")) { //sprawdzanie poprawności planszy
             if (isBoardCorrect(sboard)) {
-                strcpy(resultsFromLastCallString, "Podana plansza nie ma blednych pol");
+                strcpy(resultsFromLastCallString, "Board does not contain errors");
                 resultsFromLastCall = true;
             } else {
-                strcpy(resultsFromLastCallString, "Podana plansza ma bledne pola");
+                strcpy(resultsFromLastCallString, "Board contains errors");
                 resultsFromLastCall = true;
             }
             continue;
@@ -83,13 +92,13 @@ void runGame(enum solvingAlgorithm alg, bool uniqueSolution) {
             resultsFromLastCall = true;
             struct sudokuBoard tmp;
             copyBoardWithFilledValuesAsConstantClues(&sboard, &tmp);
-            int s = solveUsingFunction(&tmp, -1, alg);
-            if (s >= 1) {
+            int result = solveUsingFunction(&tmp, -1, alg);
+            if (result >= ONE_SOLUTION) {
                 copyBoardWithAllValuesAsNonConstant(&tmp, &sboard);
-                strcpy(resultsFromLastCallString, "Plansza zostala rozwiazana.");
+                strcpy(resultsFromLastCallString, "Board has been solved.");
                 freeHistory(&history);
             } else {
-                strcpy(resultsFromLastCallString, "Plansza nie zostala rozwiazana. Rozwiazanie nie istnieje.");
+                strcpy(resultsFromLastCallString, "Board has not been solved - solution does not exist.");
             }
         }
 
@@ -141,17 +150,17 @@ void render(struct sudokuBoard *sboard, int yCursor, int xCursor) {
     //zdecydowałem się "zhardcodować" tą funkcję, ponieważ przy różnych rozmiarach planszy pojawiłyby się jeszcze inne problemy powodujące rozjeżdżanie
     // się planszy
     puts("/--------------------------------\\");
-    puts("|  z - zapisz plansze            |");
-    puts("|  l - wczytaj plansze           |");
-    puts("|  g - wygeneruj plansze         |");
-    puts("|  c - sprawdz plansze           |");
-    puts("|  r - rozwiaz plansze           |");
-    puts("|  p - porzuc plansze            |");
-    puts("|  u - cofnij ruch               |");
-    puts("|  e - wyjdz                     |");
+    puts("|  z - save current board        |");
+    puts("|  l - load board                |");
+    puts("|  g - generate board            |");
+    puts("|  c - check board               |");
+    puts("|  r - solve board               |");
+    puts("|  p - abandon board             |");
+    puts("|  u - undo                      |");
+    puts("|  e - exit                      |");
     puts("+--------------------------------+");
-    puts("| wasd - poruszaj sie po planszy |");
-    puts("|0...9 - wpisz wartosc do planszy|");
+    puts("|  wasd - move on the board      |");
+    puts("| 0...9 - write value to board   |");
 
     int y = 0;
     int x = 0;
@@ -201,31 +210,31 @@ bool isEqual(char val1[], char val2[]) {
 
 void saveToFileUserInteraction(struct sudokuBoard sboard, char msg[]) {
     char userInput[USER_TEXT_INPUT_SIZE];
-    puts("Podaj lokalizacje zapisu");
+    puts("Saving location?");
     while (!getStringInputFromUser(userInput, USER_TEXT_INPUT_SIZE));
     int status = saveToFile(sboard, userInput);
     switch (status) {
-        case 0:
-            strcpy(msg, "Nie udalo sie otworzyc pliku. Sprawdz czy plik istnieje i czy masz odpowiednie uprawnienia.");
+        case COULD_NOT_LOAD:
+            strcpy(msg, "Could not open file. Check whether it exists, and if you have permissions to it.");
             break;
-        case 1:
-            strcpy(msg, "Udalo sie zapisac do pliku.");
+        case SAVED_SUCCESSFULLY:
+            strcpy(msg, "Saving to file was succesful.");
             break;
     }
 }
 
 void loadFromFileUserInteraction(struct sudokuBoard *sboard, char msg[]) {
     char userInput[USER_TEXT_INPUT_SIZE];
-    puts("Podaj lokalizacje pliku");
+    puts("Loading location?");
     while (!getStringInputFromUser(userInput, USER_TEXT_INPUT_SIZE));
     int status = loadFromFile(sboard, userInput);
     switch (status) {
-        case 0:
-            strcpy(msg, "Nie udalo sie otworzyc pliku. Sprawdz czy plik istnieje i czy masz odpowiednie uprawnienia.");
+        case COULD_NOT_LOAD:
+            strcpy(msg, "Could not open file. Check whether it exists, and if you have permissions to it.");
             break;
-        case 1:
-        case 2:
-            strcpy(msg, "Udalo sie otworzyc z pliku.");
+        case LOADED_SUCCESSFULLY:
+        case LOADED_SUCCESSFULLY_BAD_SIZE:
+            strcpy(msg, "Saving to file was succesful.");
             break;
     }
 }
@@ -233,24 +242,24 @@ void loadFromFileUserInteraction(struct sudokuBoard *sboard, char msg[]) {
 void generate(struct sudokuBoard *sboard, bool uniqueSolution) {
     char userInput[USER_TEXT_INPUT_SIZE];
     while (true) {
-        puts("Podaj liczbe stalych komorek (zalecane min 30, niemozliwe ponizej 17)");
+        puts("Insert filled values count (suggested 30, impossible to solve under 17 - multiple solutions)");
         int v = getIntInputFromUser();
         if (v >= 25) {
             if (generateBoard(sboard, v, uniqueSolution)) {
                 break;
             }
-            puts("Nie udalo sie wygenerowac planszy w pewnym czasie.");
+            puts("Could not generate board in given time. Try again or change parameters.");
         } else if (v >= 17 || !uniqueSolution) {
-            puts("Czy na pewno? (Y/n)");
+            puts("Are you sure? This might take a lot of time (Y/n)");
             while (!getStringInputFromUser(userInput, USER_TEXT_INPUT_SIZE));
             if (isEqual("Y", userInput)) {
                 if (generateBoard(sboard, v, uniqueSolution)) {
                     break;
                 }
-                puts("Nie udalo sie wygenerowac planszy w pewnym czasie.");
+                puts("Could not generate board in given time. Try again or change parameters.");
             }
         } else {
-            puts("Niemozliwe jest wygenerowanie planszy dla takiej wartosci.");
+            puts("Impossible to generate a board for that count of filled values, without it being unique.");
         }
     }
 }

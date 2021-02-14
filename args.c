@@ -8,12 +8,12 @@
 #include "args.h"
 
 void printNoArgs() {
-    puts("Nie zostaly wprowadzone zadne argumenty. Zostanie uzyta domyslna metoda rozwiazywania sudoku");
-    puts("Dostepne argumenty:");
-    puts("0 - backtrack (brute forcing)");
-    puts("1 - algorytm klasyczny");
-    puts("u - wymagaj unikalnego rozwiazania");
-    puts("n = nie wymagaj unikalnego rozwiazania");
+    puts("No argumens have been provided.");
+    puts("Available arguments:");
+    puts("0 - solve using backtracking/brute force");
+    puts("1 - pen and paper algorithm");
+    puts("u - require unique solution");
+    puts("n = don't require unique solution");
 }
 
 bool parseArgs(char *arg, enum solvingAlgorithm *alg, bool *requireUniqueSolution) {

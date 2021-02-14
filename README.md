@@ -1,6 +1,6 @@
 # sudoku-solver-c
 
-This repository contains a sudoku solver written in C with simple text user interface. Comments in source code and the user interface are in polish.
+This repository contains a sudoku solver written in C with simple text user interface. Comments in source code are in polish, but the user interface is in english.
 
 It contains two distinct algorithms for solving sudoku:
 * backtracking (brute-force)

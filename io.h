@@ -1,6 +1,11 @@
 #ifndef SUDOKUTEKSTOWE_IO_H
 #define SUDOKUTEKSTOWE_IO_H
 
+#define COULD_NOT_LOAD 0
+#define LOADED_SUCCESSFULLY 1
+#define SAVED_SUCCESSFULLY 1
+#define LOADED_SUCCESSFULLY_BAD_SIZE 2
+
 /**
  * Wczytuje planszę sudoku z pliku. Plansze sudoku są w formacie pliku tekstowego, w którym kolumny oddzielone są spacjami, a wiersze nowymi liniami.
  * @param sBoard plansza sudoku

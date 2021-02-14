@@ -3,12 +3,13 @@
 
 #include "board.h"
 
+#define LIMIT_REACHED -1
+#define NO_SOLUTIONS 0
+#define ONE_SOLUTION 1
+#define MULTIPLE_SOLUTIONS 2
 
-///Enum służący do wybierania metody rozwiązania
 enum solvingAlgorithm {
-///metoda brute force (algorytm z nawrotami)
     backtracking, 
-///metoda klasyczna
     classic 
 };
 
@@ -17,10 +18,10 @@ enum solvingAlgorithm {
  * @param board plansza sudoku
  * @param limit maksymalna liczba iteracji
  * @param alg wybrany algorytm
- * @return -1 - osiągnięto limit
- * @return 0 - brak rozwiązań
- * @return 1 - istnieje jedno rozwiązanie
- * @return 2 - 2 lub więcej rozwiązania
+ * @return LIMIT_REACHED - limit has been reached (timeout)
+ * @return NO_SOLUTIONS - no solutions have been found
+ * @return ONE_SOLUTION - one solution has been found
+ * @return MULTIPLE_SOLUTIONS - two or more solutions have been found
  */
 int solveUsingFunction(struct sudokuBoard *board, int limit, enum solvingAlgorithm alg);
 

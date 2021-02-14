@@ -12,7 +12,7 @@
 int loadFromFile(struct sudokuBoard *sBoard, char *fileLocation) {
     FILE* plik = fopen(fileLocation, "r");
     if (plik == NULL) {
-        perror("Blad otwierania pliku!");
+        perror("File opening error!");
         fclose(plik);
         return 0;
     } else {
@@ -23,8 +23,8 @@ int loadFromFile(struct sudokuBoard *sBoard, char *fileLocation) {
 
             index++;
             int tmp;
-            int pobrano = fscanf(plik, "%d", &tmp);
-            if (pobrano != 1) {
+            int loaded = fscanf(plik, "%d", &tmp);
+            if (loaded != 1) {
                 break;
             }
             if (tmp == 0) {
@@ -48,7 +48,7 @@ int loadFromFile(struct sudokuBoard *sBoard, char *fileLocation) {
 int saveToFile(struct sudokuBoard sBoard, char *fileLocation) {
     FILE* file = fopen(fileLocation, "w");
     if (file == NULL) {
-        perror("Blad otwierania pliku");
+        perror("File saving error");
         fclose(file);
         return 0;
     }
@@ -71,7 +71,7 @@ bool getStringInputFromUser(char *string, int maxSize) {
         int overwrittenChar = 0;
         while (((overwrittenChar = getchar()) != '\n') && (overwrittenChar != EOF)) overwritten = true;
         if (overwritten) {
-            puts("Za dlugi ciag znakow!");
+            puts("String is too long!");
             return false;
         } else {
             return true;

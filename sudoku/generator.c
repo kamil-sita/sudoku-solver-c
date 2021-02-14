@@ -134,7 +134,7 @@ bool selectCluesForSudokuBoard(struct sudokuBoard *alreadyFilledSudokuBoard, int
 
 bool generateBoard(struct sudokuBoard *board, int constantCells, bool uniqueSolution) {
     renderLineBreaker();
-    puts("Szukanie rozwiazywalnych plansz: ");
+    puts("Searching for solvable boards: ");
     for (int i = 0; i < 100; i++) {
         printf(".");
         generateFilledSudokuBoard(board);
